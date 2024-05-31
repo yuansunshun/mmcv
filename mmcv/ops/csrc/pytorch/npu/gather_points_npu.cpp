@@ -79,7 +79,7 @@ void gather_points_backward_npu(int b, int c, int n, int npoints,
 void gather_points_forward_impl(int b, int c, int n, int npoints,
                                 const Tensor points, const Tensor idx,
                                 Tensor out);
-void gather_points_backward_npu(int b, int c, int n, int npoints,
+void gather_points_backward_impl(int b, int c, int n, int npoints,
                                 const Tensor grad_out, const Tensor idx,
                                 Tensor grad_points);
 
