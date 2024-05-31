@@ -68,8 +68,12 @@ void gather_points_backward_npu(int b, int c, int n, int npoints,
       .Run();
   at::Tensor grad_points_result =
       grad_points_view.view(trans_grad_points.sizes());
-  grad_points_result = grad_points_result.transpose(1, 2);
-  grad_points.copy_(grad_points_result);
+  grad_points_result = grad_points_result.transpose(1, 2).contiguous();
+  at::Tensor grad_points_result_cast = grad_points_result;
+  if (grad_out.scalar_type() == at::ScalarType::Half) {
+    grad_points_result_cast = at_npu::native::custom_ops::npu_dtype_cast(grad_points_result, at::ScalarType::Float);
+  }
+  grad_points.copy_(grad_points_result_cast);
 }
 
 void gather_points_forward_impl(int b, int c, int n, int npoints,
