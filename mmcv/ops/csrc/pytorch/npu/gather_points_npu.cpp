@@ -24,6 +24,12 @@ void gather_points_forward_npu(int b, int c, int n, int npoints,
 void gather_points_backward_npu(int b, int c, int n, int npoints,
                                 const Tensor grad_out, const Tensor idx,
                                 Tensor grad_points) {
+  at::Tensor grad_out_cast = grad_out;
+  at::Tensor grad_points_cast = grad_points;
+  if (grad_out.scalar_type() == at::ScalarType::Half) {
+    grad_out_cast = at_npu::native::custom_ops::npu_dtype_cast(grad_out, at::ScalarType::Float);
+    grad_points_cast = at_npu::native::custom_ops::npu_dtype_cast(grad_points, at::ScalarType::Float);
+  }
   at::Tensor indices = idx;
   if (idx.scalar_type() != at::ScalarType::Int) {
     indices = idx.to(at::kInt);
