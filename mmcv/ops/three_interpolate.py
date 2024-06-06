@@ -58,11 +58,17 @@ class ThreeInterpolate(Function):
         idx, weight, m = ctx.three_interpolate_for_backward
         B, c, n = grad_out.size()
 
-        grad_features = grad_out.new_zeros(B, c, m)
-        grad_out_data = grad_out.data.contiguous()
+        dtype = grad_out.dtype
+        grad_features = grad_out.new_zeros(B, c, m).to(torch.float)
+        grad_out_data = grad_out.data.contiguous().to(torch.float)
+        weight = weight.to(float)
 
         ext_module.three_interpolate_backward(
             grad_out_data, idx, weight, grad_features.data, b=B, c=c, n=n, m=m)
+        
+        if dtype == torch.half:
+            grad_features = grad_features.to(dtype)
+            
         return grad_features, None, None
 
 
