@@ -36,17 +36,16 @@ void three_interpolate_backward_npu(int b, int c, int n, int m,
 
   auto grad_x = at::unsqueeze(grad_out, 3).to(at::kFloat);
   auto grad_y = at::unsqueeze(grad_points, 3).to(at::kFloat);
-  weight = weight.to(at::kFloat);
 
-  EXEC_NPU_CMD(aclnnThreeInterpolateBackward, grad_x, idx, weight, m, grad_y);
+  EXEC_NPU_CMD(aclnnThreeInterpolateBackward, grad_x, idx, weight.to(at::kFloat), m, grad_y);
 
-  auto output = at::squeeze(grad_y, 3);
+  auto grad_y_cast = grad_y;
+  if (originDtype == at::kHalf) {
+    grad_y_cast = grad_y.to(at::kHalf);
+  }
+  auto output = at::squeeze(grad_y_cast, 3);
   auto res = output.contiguous();
   grad_points.copy_(res);
-  
-  if (originDtype == at::kHalf) {
-    grad_points = grad_points.to(at::kHalf);
-  }
 }
 
 void three_interpolate_forward_impl(int b, int c, int m, int n,
